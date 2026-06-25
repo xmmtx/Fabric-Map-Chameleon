@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "worldnamepacket",
+  "version": "${version}",
+  "name": "WorldNamePacket",
+  "description": "Companion mod for client-side mapping mods (VoxelMap, Xaero's Map). Fabric-only.",
+  "authors": [
+    "Kosma Moczek <kosma@kosma.pl>"
+  ],
+  "contact": {
+    "sources": "https://github.com/kosma/worldnamepacket"
+  },
+  "license": "MIT",
+  "icon": "assets/pl.kosma.worldnamepacket/icon.png",
+  "environment": "server",
+  "entrypoints": {
+    "main": [
+      "pl.kosma.worldnamepacket.FabricMod"
+    ]
+  },
+  "mixins": [
+    "worldnamepacket.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "fabric-api": ">=0.100.0",
+    "minecraft": ">=1.21"
+  }
+}
