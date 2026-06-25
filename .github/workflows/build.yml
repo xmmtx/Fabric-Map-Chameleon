@@ -1,0 +1,59 @@
+name: Build All MC Versions
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  build:
+    name: "MC ${{ matrix.label }}"
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # ── MC 1.20 ~ 1.20.4（旧网络 API）──
+          - label: "1.20-1.20.4"
+            minecraft_version: "1.20.4"
+            yarn_mappings: "1.20.4+build.3"
+            fabric_version: "0.96.11+1.20.4"
+            java_version: 17
+
+          # ── MC 1.20.5 ~ 26.x（新网络 API，一个 jar 通吃）──
+          - label: "1.20.5+"
+            minecraft_version: "1.20.5"
+            yarn_mappings: "1.20.5+build.1"
+            fabric_version: "0.92.2+1.20.5"
+            java_version: 21
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK ${{ matrix.java_version }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java_version }}
+          distribution: temurin
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build
+        run: |
+          ./gradlew build --no-daemon \
+            -Pminecraft_version=${{ matrix.minecraft_version }} \
+            -Pyarn_mappings=${{ matrix.yarn_mappings }} \
+            -Pfabric_version=${{ matrix.fabric_version }} \
+            -Pjava_version=${{ matrix.java_version }}
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: map-chameleon-mc${{ matrix.label }}
+          path: build/libs/*.jar
+          if-no-files-found: error

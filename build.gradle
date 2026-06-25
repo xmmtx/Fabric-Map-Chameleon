@@ -3,12 +3,31 @@ plugins {
 	id 'maven-publish'
 }
 
-sourceCompatibility = JavaVersion.VERSION_21
-targetCompatibility = JavaVersion.VERSION_21
+sourceCompatibility = JavaVersion.toVersion(project.java_version)
+targetCompatibility = JavaVersion.toVersion(project.java_version)
 
 archivesBaseName = project.archives_base_name
 version = project.mod_version
 group = project.maven_group
+
+// ── Detect MC 1.20-1.20.4 (old networking API) vs 1.20.5+ ──
+def isLegacyMC() {
+	def v = project.minecraft_version
+	return v == "1.20" || v.matches("1\\.20\\.[0-4]")
+}
+
+// ── Exclude the wrong entrypoint class from compilation ──
+sourceSets {
+	main {
+		java {
+			if (isLegacyMC()) {
+				exclude 'pl/kosma/mapchameleon/MapChameleonMod.java'
+			} else {
+				exclude 'pl/kosma/mapchameleon/MapChameleonMod_Legacy.java'
+			}
+		}
+	}
+}
 
 repositories {
 	// Add any additional repositories here
@@ -24,10 +43,36 @@ dependencies {
 }
 
 processResources {
+	def entrypoint = isLegacyMC()
+		? "pl.kosma.mapchameleon.MapChameleonMod_Legacy"
+		: "pl.kosma.mapchameleon.MapChameleonMod"
+
+	def minecraftDepends = isLegacyMC()
+		? ">=1.20 <=1.20.4"
+		: ">=1.20.5"
+
+	def loaderDepends = isLegacyMC()
+		? ">=0.14.0"
+		: ">=0.15.0"
+
+	def apiDepends = isLegacyMC()
+		? ">=0.83.0"
+		: ">=0.92.0"
+
 	inputs.property "version", project.version
+	inputs.property "entrypoint", entrypoint
+	inputs.property "minecraft_depends", minecraftDepends
+	inputs.property "fabricloader_depends", loaderDepends
+	inputs.property "fabricapi_depends", apiDepends
 
 	filesMatching("fabric.mod.json") {
-		expand "version": project.version
+		expand(
+			"version": project.version,
+			"entrypoint": entrypoint,
+			"minecraft_depends": minecraftDepends,
+			"fabricloader_depends": loaderDepends,
+			"fabricapi_depends": apiDepends
+		)
 	}
 }
 
@@ -38,6 +83,11 @@ tasks.withType(JavaCompile) {
 	options.encoding = "UTF-8"
 }
 
+// ── Jar naming: modname-version+mcX.Y.jar ──
+def mcSuffix = isLegacyMC() ? "mc1.20-1.20.4" : "mc1.20.5"
+remapJar {
+	archiveFileName = "${project.archives_base_name}-${project.mod_version}+${mcSuffix}.jar"
+}
 jar {
 	from "LICENSE"
 }

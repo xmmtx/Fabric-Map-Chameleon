@@ -1,29 +1,29 @@
 {
   "schemaVersion": 1,
-  "id": "worldnamepacket",
+  "id": "map-chameleon",
   "version": "${version}",
-  "name": "WorldNamePacket",
-  "description": "Companion mod for client-side mapping mods (VoxelMap, Xaero's Map). Fabric-only.",
+  "name": "Map Chameleon",
+  "description": "Fabric server-side mod that sends customizable world names to client-side mapping mods (VoxelMap, Xaero's Map). Supports LEVEL_NAME / CUSTOM / RANDOM modes via config.",
   "authors": [
-    "Kosma Moczek <kosma@kosma.pl>"
+    "xmmtx"
   ],
   "contact": {
-    "sources": "https://github.com/kosma/worldnamepacket"
+    "sources": "https://github.com/xmmtx/Fabric-Map-Chameleon"
   },
   "license": "MIT",
-  "icon": "assets/pl.kosma.worldnamepacket/icon.png",
+  "icon": "",
   "environment": "server",
   "entrypoints": {
     "main": [
-      "pl.kosma.worldnamepacket.FabricMod"
+      "${entrypoint}"
     ]
   },
   "mixins": [
-    "worldnamepacket.mixins.json"
+    "map-chameleon.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.16.0",
-    "fabric-api": ">=0.100.0",
-    "minecraft": ">=1.21"
+    "fabricloader": "${fabricloader_depends}",
+    "fabric-api": "${fabricapi_depends}",
+    "minecraft": "${minecraft_depends}"
   }
 }

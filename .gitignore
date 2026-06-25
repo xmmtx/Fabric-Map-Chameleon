@@ -1,0 +1,42 @@
+# ─── Gradle ───
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# ─── Fabric Loom ───
+run/
+remappedSrc/
+
+# ─── IDE ───
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+
+# ─── Java ───
+*.class
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# ─── OS ───
+Thumbs.db
+.DS_Store
+*.swp
+*.swo
+*~
+
+# ─── Logs ───
+logs/
+*.log
+hs_err_pid*
+
+# ─── Misc ───
+*.zip
+*.rar
+*.7z
+output/

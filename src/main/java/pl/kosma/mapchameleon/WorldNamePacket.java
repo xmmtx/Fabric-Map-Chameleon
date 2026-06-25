@@ -1,4 +1,4 @@
-package pl.kosma.worldnamepacket;
+package pl.kosma.mapchameleon;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
@@ -6,13 +6,12 @@ import java.nio.charset.StandardCharsets;
 public class WorldNamePacket {
     private static final byte FORGE_PACKET_DISCRIMINATOR = 0;
     private static final byte VOXELMAP_MAGIC_NUMBER = 42;
-    private static final byte VOXELMAP_FABRIC_REQUEST_PACKET[] = new byte[]{ 0, 0, 0, 42 };
+    private static final byte[] VOXELMAP_FABRIC_REQUEST_PACKET = new byte[]{ 0, 0, 0, 42 };
     public static final String CHANNEL_NAME_VOXELMAP = "worldinfo:world_id";
     public static final String CHANNEL_NAME_XAEROMAP = "xaeroworldmap:main";
     private static final String HEX_DIGITS = "0123456789abcdef";
 
-    public static byte[] formatResponsePacket(byte[] requestBytes, String worldName)
-    {
+    public static byte[] formatResponsePacket(byte[] requestBytes, String worldName) {
         /**
          * Workaround for a bug in VoxelMap for Fabric.
          *
@@ -28,7 +27,7 @@ public class WorldNamePacket {
          * Hell is other people's code.
          */
         boolean useForgeDiscriminator = true;
-        if (requestBytes.equals(VOXELMAP_FABRIC_REQUEST_PACKET)) {
+        if (java.util.Arrays.equals(requestBytes, VOXELMAP_FABRIC_REQUEST_PACKET)) {
             useForgeDiscriminator = false;
         }
 

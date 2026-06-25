@@ -1,11 +1,13 @@
-package pl.kosma.worldnamepacket;
+package pl.kosma.mapchameleon;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.MinecraftDedicatedServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -13,8 +15,13 @@ import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class FabricMod implements ModInitializer {
+import java.util.concurrent.ThreadLocalRandom;
+
+public class MapChameleonMod implements ModInitializer {
+
     public static final Logger LOGGER = LogManager.getLogger();
+
+    private static MapChameleonConfig config;
 
     // --- CustomPayload definitions for each channel ---
 
@@ -48,6 +55,9 @@ public class FabricMod implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        // Load config
+        config = MapChameleonConfig.load(FabricLoader.getInstance().getConfigDir());
+
         // VoxelMap: request-response channel (client sends request, server responds)
         PayloadTypeRegistry.playC2S().register(VoxelMapPayload.ID, VoxelMapPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(VoxelMapPayload.ID, VoxelMapPayload.CODEC);
@@ -68,25 +78,81 @@ public class FabricMod implements ModInitializer {
         sendXaeroMapResponse(player);
     }
 
+    // --- Name resolution ---
+
+    /**
+     * Resolve the effective world name according to the current config mode.
+     */
+    private static String resolveWorldName(MinecraftServer server) {
+        switch (config.worldNameMode) {
+            case CUSTOM:
+                return config.customWorldName;
+
+            case RANDOM:
+                return generateRandomName(config.randomNameLength);
+
+            case LEVEL_NAME:
+            default:
+                return getLevelName(server);
+        }
+    }
+
+    /**
+     * Generate a random integer string of the given digit length,
+     * with a random sign (positive or negative).
+     */
+    private static String generateRandomName(int digits) {
+        if (digits <= 0) digits = 12;
+        ThreadLocalRandom rng = ThreadLocalRandom.current();
+
+        // Build the absolute value as a string of 'digits' decimal digits
+        StringBuilder sb = new StringBuilder(digits);
+        // First digit: 1-9 (no leading zero)
+        sb.append(rng.nextInt(1, 10));
+        for (int i = 1; i < digits; i++) {
+            sb.append(rng.nextInt(0, 10));
+        }
+
+        // Random sign: 50% positive, 50% negative
+        if (rng.nextBoolean()) {
+            sb.insert(0, '-');
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * Safely extract the level-name from the server.
+     * Falls back to "world" on class-cast (singleplayer / LAN integrated server).
+     */
+    private static String getLevelName(MinecraftServer server) {
+        try {
+            return ((MinecraftDedicatedServer) server).getLevelName();
+        } catch (ClassCastException e) {
+            LOGGER.warn("[MapChameleon] Not a dedicated server, using fallback world name");
+            return "world";
+        }
+    }
+
     // --- Response helpers ---
 
     private static void sendVoxelMapResponse(ServerPlayerEntity player, byte[] requestBytes) {
-        String levelName = ((MinecraftDedicatedServer) player.getServerWorld().getServer()).getLevelName();
-        byte[] responseBytes = WorldNamePacket.formatResponsePacket(requestBytes, levelName);
+        String worldName = resolveWorldName(player.getServer());
+        byte[] responseBytes = WorldNamePacket.formatResponsePacket(requestBytes, worldName);
 
         LOGGER.debug("request:  {}", WorldNamePacket.byteArrayToHexString(requestBytes));
         LOGGER.debug("response: {}", WorldNamePacket.byteArrayToHexString(responseBytes));
-        LOGGER.info("WorldNamePacket: [{}] sending levelName: {}", WorldNamePacket.CHANNEL_NAME_VOXELMAP, levelName);
+        LOGGER.info("[MapChameleon] [{}] sending worldName: {}", WorldNamePacket.CHANNEL_NAME_VOXELMAP, worldName);
 
         ServerPlayNetworking.send(player, new VoxelMapPayload(responseBytes));
     }
 
     private static void sendXaeroMapResponse(ServerPlayerEntity player) {
-        String levelName = ((MinecraftDedicatedServer) player.getServerWorld().getServer()).getLevelName();
-        byte[] responseBytes = WorldNamePacket.formatResponsePacket(new byte[0], levelName);
+        String worldName = resolveWorldName(player.getServer());
+        byte[] responseBytes = WorldNamePacket.formatResponsePacket(new byte[0], worldName);
 
         LOGGER.debug("response: {}", WorldNamePacket.byteArrayToHexString(responseBytes));
-        LOGGER.info("WorldNamePacket: [{}] sending levelName: {}", WorldNamePacket.CHANNEL_NAME_XAEROMAP, levelName);
+        LOGGER.info("[MapChameleon] [{}] sending worldName: {}", WorldNamePacket.CHANNEL_NAME_XAEROMAP, worldName);
 
         ServerPlayNetworking.send(player, new XaeroMapPayload(responseBytes));
     }
