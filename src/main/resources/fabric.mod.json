@@ -19,7 +19,7 @@
     ]
   },
   "mixins": [
-    "map-chameleon.mixins.json"
+    "${mixin_config}"
   ],
   "depends": {
     "fabricloader": "${fabricloader_depends}",

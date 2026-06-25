@@ -22,8 +22,10 @@ sourceSets {
 		java {
 			if (isLegacyMC()) {
 				exclude 'pl/kosma/mapchameleon/MapChameleonMod.java'
+				exclude 'pl/kosma/mapchameleon/mixins/MixinPlayerManager.java'
 			} else {
 				exclude 'pl/kosma/mapchameleon/MapChameleonMod_Legacy.java'
+				exclude 'pl/kosma/mapchameleon/mixins/MixinPlayerManager_Legacy.java'
 			}
 		}
 	}
@@ -49,7 +51,7 @@ processResources {
 
 	def minecraftDepends = isLegacyMC()
 		? ">=1.20 <=1.20.4"
-		: ">=1.20.5"
+		: ">=1.20.5 <=26.2"
 
 	def loaderDepends = isLegacyMC()
 		? ">=0.14.0"
@@ -59,11 +61,16 @@ processResources {
 		? ">=0.83.0"
 		: ">=0.92.0"
 
+	def mixinConfig = isLegacyMC()
+		? "map-chameleon.mixins_legacy.json"
+		: "map-chameleon.mixins.json"
+
 	inputs.property "version", project.version
 	inputs.property "entrypoint", entrypoint
 	inputs.property "minecraft_depends", minecraftDepends
 	inputs.property "fabricloader_depends", loaderDepends
 	inputs.property "fabricapi_depends", apiDepends
+	inputs.property "mixin_config", mixinConfig
 
 	filesMatching("fabric.mod.json") {
 		expand(
@@ -71,7 +78,8 @@ processResources {
 			"entrypoint": entrypoint,
 			"minecraft_depends": minecraftDepends,
 			"fabricloader_depends": loaderDepends,
-			"fabricapi_depends": apiDepends
+			"fabricapi_depends": apiDepends,
+			"mixin_config": mixinConfig
 		)
 	}
 }
@@ -84,7 +92,7 @@ tasks.withType(JavaCompile) {
 }
 
 // ── Jar naming: modname-version+mcX.Y.jar ──
-def mcSuffix = isLegacyMC() ? "mc1.20-1.20.4" : "mc1.20.5"
+def mcSuffix = isLegacyMC() ? "mc1.20-1.20.4" : "mc1.20.5-26.2"
 remapJar {
 	archiveFileName = "${project.archives_base_name}-${project.mod_version}+${mcSuffix}.jar"
 }

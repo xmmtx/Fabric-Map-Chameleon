@@ -1,17 +1,17 @@
-name: Build All MC Versions
+name: Build & Release
 
 on:
   push:
     branches: [main, master]
+    tags: ["v*"]
   pull_request:
     branches: [main, master]
-  workflow_dispatch:  # 允许手动触发
+  workflow_dispatch:
 
 jobs:
   build:
     name: "MC ${{ matrix.label }}"
     runs-on: ubuntu-latest
-
     strategy:
       fail-fast: false
       matrix:
@@ -23,11 +23,11 @@ jobs:
             fabric_version: "0.96.11+1.20.4"
             java_version: 17
 
-          # ── MC 1.20.5 ~ 26.x（新网络 API，一个 jar 通吃）──
-          - label: "1.20.5+"
+          # ── MC 1.20.5 ~ 26.2（新网络 API）──
+          - label: "1.20.5-26.2"
             minecraft_version: "1.20.5"
             yarn_mappings: "1.20.5+build.1"
-            fabric_version: "0.92.2+1.20.5"
+            fabric_version: "0.97.8+1.20.5"
             java_version: 21
 
     steps:
@@ -57,3 +57,33 @@ jobs:
           name: map-chameleon-mc${{ matrix.label }}
           path: build/libs/*.jar
           if-no-files-found: error
+
+  # ── 仅 tag(v*) 或手动触发时创建 GitHub Release ──
+  release:
+    name: Create Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: map-chameleon-*
+          merge-multiple: false
+          path: jars
+
+      - name: Flatten & list jars
+        run: |
+          mkdir -p release
+          find jars -name "*.jar" -exec cp {} release/ \;
+          ls -lh release/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Map Chameleon ${{ github.ref_name }}"
+          files: release/*.jar
+          generate_release_notes: true
+          draft: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

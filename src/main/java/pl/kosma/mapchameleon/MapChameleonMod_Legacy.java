@@ -58,11 +58,11 @@ public class MapChameleonMod_Legacy implements ModInitializer {
     // --- Name resolution ---
 
     private static String resolveWorldName(MinecraftServer server) {
-        switch (config.worldNameMode) {
+        switch (config.mode) {
             case CUSTOM:
-                return config.customWorldName;
+                return config.name;
             case RANDOM:
-                return generateRandomName(config.randomNameLength);
+                return generateRandomName(config.length);
             case LEVEL_NAME:
             default:
                 return getLevelName(server);

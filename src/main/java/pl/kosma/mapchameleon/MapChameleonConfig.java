@@ -1,56 +1,66 @@
 package pl.kosma.mapchameleon;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.annotations.SerializedName;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Properties;
 
 /**
  * Configuration for Map Chameleon mod.
- * Config file: config/map-chameleon.json
+ * Config file: config/map-chameleon.properties
  */
 public class MapChameleonConfig {
 
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static final Logger LOGGER = LogManager.getLogger();
 
     public enum WorldNameMode {
-        /** Use the server's level-name from server.properties */
-        LEVEL_NAME,
-        /** Use the custom name from {@link #customWorldName} */
-        CUSTOM,
-        /** Generate a random 12-digit integer on each world change */
-        RANDOM
+        LEVEL_NAME,  // 服务器 level-name
+        CUSTOM,      // 自定义名称 (参见 name)
+        RANDOM       // 随机数字 (参见 length)
     }
 
-    @SerializedName("worldNameMode")
-    public WorldNameMode worldNameMode = WorldNameMode.LEVEL_NAME;
-
-    @SerializedName("customWorldName")
-    public String customWorldName = "My World";
-
-    @SerializedName("randomNameLength")
-    public int randomNameLength = 12;
+    public WorldNameMode mode = WorldNameMode.LEVEL_NAME;
+    public String name = "My World";
+    public int length = 12;
 
     // --- Load / Save ---
 
     public static MapChameleonConfig load(Path configDir) {
-        Path configFile = configDir.resolve("map-chameleon.json");
+        Path configFile = configDir.resolve("map-chameleon.properties");
         MapChameleonConfig config = new MapChameleonConfig();
 
         if (Files.exists(configFile)) {
+            Properties props = new Properties();
             try (Reader reader = Files.newBufferedReader(configFile)) {
-                config = GSON.fromJson(reader, MapChameleonConfig.class);
-                MapChameleonMod.LOGGER.info("[MapChameleon] Loaded config: mode={}, customName='{}', randomLen={}",
-                    config.worldNameMode, config.customWorldName, config.randomNameLength);
-                return config;
+                props.load(reader);
             } catch (IOException e) {
-                MapChameleonMod.LOGGER.error("[MapChameleon] Failed to load config, using defaults", e);
+                LOGGER.error("[MapChameleon] Failed to read config, using defaults", e);
+                return config;
             }
+            try {
+                config.mode = WorldNameMode.valueOf(
+                    props.getProperty("mode", "LEVEL_NAME").trim().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                LOGGER.warn("[MapChameleon] Invalid mode '{}', using LEVEL_NAME",
+                    props.getProperty("mode"));
+                config.mode = WorldNameMode.LEVEL_NAME;
+            }
+            config.name = props.getProperty("name", "My World").trim();
+            try {
+                config.length = Integer.parseInt(
+                    props.getProperty("length", "12").trim());
+            } catch (NumberFormatException e) {
+                LOGGER.warn("[MapChameleon] Invalid length, using 12");
+                config.length = 12;
+            }
+            LOGGER.info("[MapChameleon] Loaded config: mode={}, name={}, length={}",
+                config.mode, config.name, config.length);
+            return config;
         }
 
         // Config file doesn't exist — save defaults
@@ -59,15 +69,24 @@ public class MapChameleonConfig {
     }
 
     public void save(Path configDir) {
-        Path configFile = configDir.resolve("map-chameleon.json");
+        Path configFile = configDir.resolve("map-chameleon.properties");
         try {
             Files.createDirectories(configDir);
             try (Writer writer = Files.newBufferedWriter(configFile)) {
-                GSON.toJson(this, writer);
+                writer.write("# Map Chameleon Configuration\n");
+                writer.write("# 修改后保存，重启服务器即可\n");
+                writer.write("# mode: LEVEL_NAME | CUSTOM | RANDOM\n");
+                writer.write("mode=" + mode.name() + "\n");
+                writer.write("\n");
+                writer.write("# name: 自定义世界名称 (mode=CUSTOM 时生效)\n");
+                writer.write("name=" + name + "\n");
+                writer.write("\n");
+                writer.write("# length: 随机数字位数 (mode=RANDOM 时生效)\n");
+                writer.write("length=" + length + "\n");
             }
-            MapChameleonMod.LOGGER.info("[MapChameleon] Saved default config to {}", configFile);
+            LOGGER.info("[MapChameleon] Saved default config to {}", configFile);
         } catch (IOException e) {
-            MapChameleonMod.LOGGER.error("[MapChameleon] Failed to save config", e);
+            LOGGER.error("[MapChameleon] Failed to save config", e);
         }
     }
 }

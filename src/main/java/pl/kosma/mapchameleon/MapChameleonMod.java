@@ -84,12 +84,12 @@ public class MapChameleonMod implements ModInitializer {
      * Resolve the effective world name according to the current config mode.
      */
     private static String resolveWorldName(MinecraftServer server) {
-        switch (config.worldNameMode) {
+        switch (config.mode) {
             case CUSTOM:
-                return config.customWorldName;
+                return config.name;
 
             case RANDOM:
-                return generateRandomName(config.randomNameLength);
+                return generateRandomName(config.length);
 
             case LEVEL_NAME:
             default:
