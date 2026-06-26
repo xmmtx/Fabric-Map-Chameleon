@@ -10,7 +10,7 @@
   "contact": {
     "sources": "https://github.com/xmmtx/Fabric-Map-Chameleon"
   },
-  "license": "MIT",
+  "license": "GPL-3.0",
   "icon": "icon.svg",
   "environment": "server",
   "entrypoints": {
