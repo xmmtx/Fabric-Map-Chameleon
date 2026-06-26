@@ -45,6 +45,7 @@ jobs:
 
       - name: Build
         run: |
+          chmod +x gradlew
           ./gradlew build --no-daemon \
             -Pminecraft_version=${{ matrix.minecraft_version }} \
             -Pyarn_mappings=${{ matrix.yarn_mappings }} \
