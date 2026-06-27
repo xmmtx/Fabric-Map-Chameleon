@@ -32,7 +32,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup JDK ${{ matrix.java_version }}
         uses: actions/setup-java@v4
@@ -53,7 +53,7 @@ jobs:
             -Pjava_version=${{ matrix.java_version }}
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: map-chameleon-mc${{ matrix.label }}
           path: build/libs/*.jar
@@ -67,7 +67,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: map-chameleon-*
           merge-multiple: false
