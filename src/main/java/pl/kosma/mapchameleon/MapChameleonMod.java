@@ -85,13 +85,13 @@ public class MapChameleonMod implements ModInitializer {
      */
     private static String resolveWorldName(MinecraftServer server) {
         switch (config.mode) {
-            case CUSTOM:
+            case custom:
                 return config.name;
 
-            case RANDOM:
+            case random:
                 return generateRandomName(config.length);
 
-            case LEVEL_NAME:
+            case level:
             default:
                 return getLevelName(server);
         }

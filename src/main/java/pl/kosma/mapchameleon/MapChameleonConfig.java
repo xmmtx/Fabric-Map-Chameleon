@@ -19,13 +19,13 @@ public class MapChameleonConfig {
     private static final Logger LOGGER = LogManager.getLogger();
 
     public enum WorldNameMode {
-        LEVEL_NAME,  // 服务器 level-name
-        CUSTOM,      // 自定义名称 (参见 name)
-        RANDOM       // 随机数字 (参见 length)
+        level,  // 服务器 level-name
+        custom,      // 自定义名称 (参见 name)
+        random       // 随机数字 (参见 length)
     }
 
-    public WorldNameMode mode = WorldNameMode.LEVEL_NAME;
-    public String name = "My World";
+    public WorldNameMode mode = WorldNameMode.level;
+    public String name = "world";
     public int length = 12;
 
     // --- Load / Save ---
@@ -44,13 +44,13 @@ public class MapChameleonConfig {
             }
             try {
                 config.mode = WorldNameMode.valueOf(
-                    props.getProperty("mode", "LEVEL_NAME").trim().toUpperCase());
+                    props.getProperty("mode", "level").trim());
             } catch (IllegalArgumentException e) {
-                LOGGER.warn("[MapChameleon] Invalid mode '{}', using LEVEL_NAME",
+                LOGGER.warn("[MapChameleon] Invalid mode '{}', using level",
                     props.getProperty("mode"));
-                config.mode = WorldNameMode.LEVEL_NAME;
+                config.mode = WorldNameMode.level;
             }
-            config.name = props.getProperty("name", "My World").trim();
+            config.name = props.getProperty("name", "world").trim();
             try {
                 config.length = Integer.parseInt(
                     props.getProperty("length", "12").trim());
@@ -74,14 +74,19 @@ public class MapChameleonConfig {
             Files.createDirectories(configDir);
             try (Writer writer = Files.newBufferedWriter(configFile)) {
                 writer.write("# Map Chameleon Configuration\n");
-                writer.write("# 修改后保存，重启服务器即可\n");
-                writer.write("# mode: LEVEL_NAME | CUSTOM | RANDOM\n");
+                writer.write("# Edit, save, then restart the server. | 修改后保存，重启服务器即可。\n");
+                writer.write("# mode: level | custom | random\n");
+                writer.write("#   level  = use server.properties level-name | 使用服务器 level-name\n");
+                writer.write("#   custom = use the name below            | 使用下方 name 的值\n");
+                writer.write("#   random = random digits (see length)    | 随机数字 (参见 length)\n");
                 writer.write("mode=" + mode.name() + "\n");
                 writer.write("\n");
-                writer.write("# name: 自定义世界名称 (mode=CUSTOM 时生效)\n");
+                writer.write("# name: custom world name (used when mode=custom)\n");
+                writer.write("#       自定义世界名称 (mode=custom 时生效)\n");
                 writer.write("name=" + name + "\n");
                 writer.write("\n");
-                writer.write("# length: 随机数字位数 (mode=RANDOM 时生效)\n");
+                writer.write("# length: number of digits for random name (used when mode=random)\n");
+                writer.write("#         随机数字位数 (mode=random 时生效)\n");
                 writer.write("length=" + length + "\n");
             }
             LOGGER.info("[MapChameleon] Saved default config to {}", configFile);
