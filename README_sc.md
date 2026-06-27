@@ -18,13 +18,13 @@
 ## 简介
 向客户端小地图模组（VoxelMap、Xaero's Map）发送可自定义的世界名称。支持三种模式：服务器原始名称、自定义名称、随机数字。
 
-## 环境
-**平台：** `Java 版`  
-**模组加载器：** `Fabric`  
-**端：** `仅服务端`  
-**前置：** `Fabric API`  
+## 运行环境
+**支持平台：** `JAVA版 (JAVA Edition)`  
+**运作方式：** `Fabric`  
+**运行环境：** `仅服务端`  
+**前置Mod：** `Fabric API`  
 
-## 用法
+## 使用方法
 1. 前往 [Releases](https://github.com/xmmtx/Fabric-Map-Chameleon/releases) 下载，选择与 MC 版本匹配的 jar
 2. 放入服务器的 `mods` 文件夹
 3. 首次启动后自动生成配置文件：`config/map-chameleon.properties`
