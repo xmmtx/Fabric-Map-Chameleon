@@ -11,7 +11,7 @@
     "sources": "https://github.com/xmmtx/Fabric-Map-Chameleon"
   },
   "license": "GPL-3.0",
-  "icon": "icon.svg",
+  "icon": "assets/map-chameleon/icon.png",
   "environment": "server",
   "entrypoints": {
     "main": [
