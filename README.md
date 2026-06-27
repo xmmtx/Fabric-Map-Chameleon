@@ -1,4 +1,5 @@
 <div align="center">
+  <a><img width="144px" alt="logo" src="./icon.svg"/></a>
   <h1 align="center">Fabric Map Chameleon</h1>
   <p><em>Support for client map mods for players using multi-world servers.</em></p>
 </div>
