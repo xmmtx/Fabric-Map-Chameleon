@@ -25,7 +25,7 @@
 **前置Mod：** `Fabric API`  
 
 ## 使用方法
-1. 前往 [Releases](https://github.com/xmmtx/Fabric-Map-Chameleon/releases) 下载，选择与 MC 版本匹配的 jar
+1. 前往 [Releases](https://github.com/xmmtx/Fabric-Map-Chameleon/releases/latest) 下载，选择与 MC 版本匹配的 jar
 2. 放入服务器的 `mods` 文件夹
 3. 首次启动后自动生成配置文件：`config/map-chameleon.properties`
 4. 按需修改。默认配置如下：
