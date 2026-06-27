@@ -25,7 +25,7 @@ Sends customizable world names to client-side map mods (VoxelMap, Xaero's Map) o
 **Dependencies:** `Fabric API`  
 
 ## Usage
-1. Download from [Releases](https://github.com/xmmtx/Fabric-Map-Chameleon/releases) — pick the jar that matches your MC version
+1. Download from [Releases](https://github.com/xmmtx/Fabric-Map-Chameleon/releases/latest) — pick the jar that matches your MC version
 2. Place the jar in the server's `mods` folder
 3. A config file will be created on first startup: `config/map-chameleon.properties`
 4. Edit it as needed. The default config looks like this:
