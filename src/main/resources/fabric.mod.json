@@ -1,29 +1,27 @@
 {
   "schemaVersion": 1,
-  "id": "map-chameleon",
+  "id": "map-chameleon-server",
   "version": "${version}",
-  "name": "Map Chameleon",
-  "description": "Fabric server-side mod that sends customizable world names to client-side mapping mods (VoxelMap, Xaero's Map). Supports LEVEL_NAME / CUSTOM / RANDOM modes via config.",
-  "authors": [
-    "xmmtx"
-  ],
-  "contact": {
-    "sources": "https://github.com/xmmtx/Fabric-Map-Chameleon"
-  },
+  "name": "Map Chameleon Server",
+  "description": "Server-side mod for multi-world map identification, shared waypoints and BlueMap integration. Supports VoxelMap, Xaero's Map, JourneyMap.",
+  "authors": ["xmmtx"],
+  "contact": { "sources": "https://github.com/xmmtx/Fabric-Map-Chameleon" },
   "license": "GPL-3.0",
-  "icon": "assets/map-chameleon/icon.png",
   "environment": "server",
   "entrypoints": {
-    "main": [
-      "${entrypoint}"
-    ]
+    "main": ["pl.kosma.mapchameleon.MapChameleonServer"],
+    "journeymap_server": ["pl.kosma.mapchameleon.integration.JourneyMapServerPlugin"]
   },
   "mixins": [
-    "${mixin_config}"
+    "map-chameleon.mixins.json"
   ],
   "depends": {
     "fabricloader": "${fabricloader_depends}",
     "fabric-api": "${fabricapi_depends}",
     "minecraft": "${minecraft_depends}"
+  },
+  "suggests": {
+    "bluemap": "*",
+    "journeymap": "*"
   }
 }

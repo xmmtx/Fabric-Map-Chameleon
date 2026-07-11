@@ -2,11 +2,15 @@
 .gradle/
 build/
 !gradle/wrapper/gradle-wrapper.jar
-!gradle/wrapper/gradle-wrapper.properties
 
 # ─── Fabric Loom ───
 run/
+.loom-cache/
 remappedSrc/
+
+# ─── Build output ───
+output/
+*.log
 
 # ─── IDE ───
 .idea/
@@ -17,11 +21,13 @@ remappedSrc/
 .project
 .classpath
 .settings/
+bin/
 
 # ─── Java ───
 *.class
 *.jar
 !gradle/wrapper/gradle-wrapper.jar
+
 
 # ─── OS ───
 Thumbs.db

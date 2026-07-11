@@ -1,9 +1,11 @@
 pluginManagement {
     repositories {
-        maven {
-            name = 'Fabric'
-            url = 'https://maven.fabricmc.net/'
-        }
+        maven { name = 'Fabric'; url = 'https://maven.fabricmc.net/' }
+        maven { name = 'BlueMap'; url = 'https://repo.bluecolored.de/releases' }
+        maven { name = 'JourneyMap'; url = 'https://jm.gserv.me/repository/maven-public/' }
+        maven { name = 'JourneyMap2'; url = 'https://maven.blamejared.com' }
         gradlePluginPortal()
     }
 }
+
+rootProject.name = 'map-chameleon'

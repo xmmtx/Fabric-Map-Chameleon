@@ -1,7 +1,7 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "pl.kosma.mapchameleon.mixins",
+  "package": "pl.kosma.mapchameleon.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "MixinPlayerManager"

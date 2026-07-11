@@ -1,101 +1,62 @@
 plugins {
-	id 'fabric-loom' version '1.7-SNAPSHOT'
-	id 'maven-publish'
+    id 'fabric-loom' version '1.7-SNAPSHOT'
+    id 'maven-publish'
 }
 
 sourceCompatibility = JavaVersion.toVersion(project.java_version)
 targetCompatibility = JavaVersion.toVersion(project.java_version)
 
-archivesBaseName = project.archives_base_name
 version = project.mod_version
 group = project.maven_group
 
-// ── Detect MC 1.20-1.20.4 (old networking API) vs 1.20.5+ ──
-def isLegacyMC() {
-	def v = project.minecraft_version
-	return v == "1.20" || v.matches("1\\.20\\.[0-4]")
-}
-
-// ── Exclude the wrong entrypoint class from compilation ──
-sourceSets {
-	main {
-		java {
-			if (isLegacyMC()) {
-				exclude 'pl/kosma/mapchameleon/MapChameleonMod.java'
-				exclude 'pl/kosma/mapchameleon/mixins/MixinPlayerManager.java'
-			} else {
-				exclude 'pl/kosma/mapchameleon/MapChameleonMod_Legacy.java'
-				exclude 'pl/kosma/mapchameleon/mixins/MixinPlayerManager_Legacy.java'
-			}
-		}
-	}
-}
-
 repositories {
-	// Add any additional repositories here
+    maven { name = 'BlueMap'; url = 'https://repo.bluecolored.de/releases' }
+    maven { name = 'JourneyMap'; url = 'https://jm.gserv.me/repository/maven-public/' }
+    maven { name = 'JourneyMap2'; url = 'https://maven.blamejared.com' }
 }
 
 dependencies {
-	// To change the versions see the gradle.properties file
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    // BlueMap API (compileOnly)
+    compileOnly "de.bluecolored:bluemap-api:${project.bluemap_api_version}"
+
+    // JourneyMap API (compileOnly)
+    compileOnly "info.journeymap:journeymap-api-fabric:${project.journeymap_api_version}"
+
+    // SnakeYAML
+    modImplementation "org.yaml:snakeyaml:${project.snakeyaml_version}"
+    include "org.yaml:snakeyaml:${project.snakeyaml_version}"
+
+    // JDBC drivers
+    include implementation("com.zaxxer:HikariCP:5.1.0")
+    include implementation("com.mysql:mysql-connector-j:8.3.0")
+    include implementation("org.xerial:sqlite-jdbc:3.45.1.0")
+    include implementation("com.h2database:h2:2.2.224")
 }
 
 processResources {
-	def entrypoint = isLegacyMC()
-		? "pl.kosma.mapchameleon.MapChameleonMod_Legacy"
-		: "pl.kosma.mapchameleon.MapChameleonMod"
+    inputs.property "version", project.version
+    inputs.property "minecraft_depends", ">=1.20.5"
+    inputs.property "fabricloader_depends", ">=0.15.0"
+    inputs.property "fabricapi_depends", ">=0.92.0"
 
-	def minecraftDepends = isLegacyMC()
-		? ">=1.20 <=1.20.4"
-		: ">=1.20.5 <=26.2"
-
-	def loaderDepends = isLegacyMC()
-		? ">=0.14.0"
-		: ">=0.15.0"
-
-	def apiDepends = isLegacyMC()
-		? ">=0.83.0"
-		: ">=0.92.0"
-
-	def mixinConfig = isLegacyMC()
-		? "map-chameleon.mixins_legacy.json"
-		: "map-chameleon.mixins.json"
-
-	inputs.property "version", project.version
-	inputs.property "entrypoint", entrypoint
-	inputs.property "minecraft_depends", minecraftDepends
-	inputs.property "fabricloader_depends", loaderDepends
-	inputs.property "fabricapi_depends", apiDepends
-	inputs.property "mixin_config", mixinConfig
-
-	filesMatching("fabric.mod.json") {
-		expand(
-			"version": project.version,
-			"entrypoint": entrypoint,
-			"minecraft_depends": minecraftDepends,
-			"fabricloader_depends": loaderDepends,
-			"fabricapi_depends": apiDepends,
-			"mixin_config": mixinConfig
-		)
-	}
+    filesMatching("fabric.mod.json") {
+        expand(
+            "version": project.version,
+            "minecraft_depends": ">=1.20.5",
+            "fabricloader_depends": ">=0.15.0",
+            "fabricapi_depends": ">=0.92.0"
+        )
+    }
 }
 
-// ensure that the encoding is set to UTF-8, no matter what the system default is
-// this fixes some edge cases with special characters not displaying correctly
-// see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
-tasks.withType(JavaCompile) {
-	options.encoding = "UTF-8"
-}
+tasks.withType(JavaCompile) { options.encoding = "UTF-8" }
 
-// ── Jar naming: modname-version+mcX.Y.jar ──
-def mcSuffix = isLegacyMC() ? "mc1.20-1.20.4" : "mc1.20.5-26.2"
 remapJar {
-	archiveFileName = "${project.archives_base_name}-${project.mod_version}+${mcSuffix}.jar"
+    archiveFileName = "map-chameleon-${project.mod_version}+mc1.20.5-1.21.jar"
 }
-jar {
-	from "LICENSE"
-}
+jar { from "LICENSE" }

@@ -1,18 +1,17 @@
-package pl.kosma.mapchameleon.mixins;
-
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+package pl.kosma.mapchameleon.mixin;
 
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import pl.kosma.mapchameleon.MapChameleonMod;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import pl.kosma.mapchameleon.network.WorldNameHandler;
 
 /**
- * Injects into {@link PlayerManager#sendWorldInfo} to push XaeroMap
- * world name whenever a player joins or switches worlds.
+ * Hooks into PlayerManager.sendWorldInfo to push XaeroMap
+ * world name when a player switches worlds or respawns.
  */
 @Mixin(PlayerManager.class)
 public class MixinPlayerManager {
@@ -21,6 +20,7 @@ public class MixinPlayerManager {
         method = "sendWorldInfo(Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/server/world/ServerWorld;)V"
     )
     public void onSendWorldInfo(ServerPlayerEntity player, ServerWorld world, CallbackInfo info) {
-        MapChameleonMod.onServerWorldInfo(player);
+        int worldId = Math.abs(world.getRegistryKey().getValue().hashCode());
+        WorldNameHandler.sendXaeroWorldName(player, worldId);
     }
 }
