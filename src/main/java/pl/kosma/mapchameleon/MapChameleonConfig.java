@@ -1,7 +1,7 @@
 package pl.kosma.mapchameleon;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -16,7 +16,7 @@ import java.util.Properties;
  */
 public class MapChameleonConfig {
 
-    private static final Logger LOGGER = LogManager.getLogger();
+    private static final Logger LOGGER = LoggerFactory.getLogger("MapChameleon");
 
     public enum WorldNameMode {
         level,  // 服务器 level-name

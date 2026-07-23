@@ -10,8 +10,8 @@ import net.minecraft.server.dedicated.MinecraftDedicatedServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -24,7 +24,7 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class MapChameleonMod_Legacy implements ModInitializer {
 
-    public static final Logger LOGGER = LogManager.getLogger();
+    public static final Logger LOGGER = LoggerFactory.getLogger("MapChameleon");
 
     private static MapChameleonConfig config;
 

@@ -13,6 +13,8 @@ import pl.kosma.mapchameleon.MapChameleonMod;
 /**
  * Injects into {@link PlayerManager#sendWorldInfo} to push XaeroMap
  * world name whenever a player joins or switches worlds.
+ *
+ * <p>Uses Yarn mappings (MC 1.20.5 – 1.21.x).</p>
  */
 @Mixin(PlayerManager.class)
 public class MixinPlayerManager {
