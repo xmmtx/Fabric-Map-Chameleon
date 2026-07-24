@@ -65,8 +65,8 @@ jobs:
       - name: Build (Mojang mappings)
         if: matrix.label == '26.2'
         run: |
+          sed -i 's|gradle-8.10.2-bin.zip|gradle-9.5.1-bin.zip|' gradle/wrapper/gradle-wrapper.properties
           chmod +x gradlew
-          ./gradlew wrapper --gradle-version 9.5.1
           ./gradlew -b build-mojang.gradle build --no-daemon \
             -Pminecraft_version=${{ matrix.minecraft_version }} \
             -Pfabric_version=${{ matrix.fabric_version }} \
