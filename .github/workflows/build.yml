@@ -21,8 +21,8 @@ jobs:
             minecraft_version: "1.20.4"
             yarn_mappings: "1.20.4+build.3"
             fabric_version: "0.96.11+1.20.4"
-            java_version: 17
-            gradle_version: "8.10.2"
+            java_version: 21
+            gradle_version: "9.5.1"
 
           # ── MC 1.20.5 ~ 1.21.x（新网络 API，Yarn 映射）──
           - label: "1.20.5-1.21.11"
@@ -30,15 +30,14 @@ jobs:
             yarn_mappings: "1.20.5+build.1"
             fabric_version: "0.97.8+1.20.5"
             java_version: 21
-            gradle_version: "8.10.2"
+            gradle_version: "9.5.1"
 
-          # ── MC 26.x（Mojang 官方映射，无 Yarn；需等 Mojang 映射发布）──
-          # 当 Mojang 对 MC 26.x 的官方映射发布后取消注释：
-          # - label: "26.x"
-          #   minecraft_version: "26.2"
-          #   fabric_version: "0.155.2+26.2"
-          #   java_version: 25
-          #   gradle_version: "9.5.0"
+          # ── MC 26.2（Mojang 官方映射，无混淆）──
+          - label: "26.2"
+            minecraft_version: "26.2"
+            fabric_version: "0.155.2+26.2"
+            java_version: 25
+            gradle_version: "9.5.1"
 
     steps:
       - name: Checkout
