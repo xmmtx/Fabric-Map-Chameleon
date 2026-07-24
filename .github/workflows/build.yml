@@ -61,13 +61,15 @@ jobs:
             -Pfabric_version=${{ matrix.fabric_version }} \
             -Pjava_version=${{ matrix.java_version }}
 
-      # ──────────── Mojang 构建（MC 26.x，-b 指定构建文件）────────────
+      # ──────────── Mojang 构建（MC 26.x，需 Gradle 9.5.1 + Java 25）────────────
       - name: Build (Mojang mappings)
         if: matrix.label == '26.2'
         run: |
           sed -i 's|gradle-8.10.2-bin.zip|gradle-9.5.1-bin.zip|' gradle/wrapper/gradle-wrapper.properties
+          mv build.gradle _build_yarn.gradle
+          mv build-mojang.gradle build.gradle
           chmod +x gradlew
-          ./gradlew -b build-mojang.gradle build --no-daemon \
+          ./gradlew build --no-daemon \
             -Pminecraft_version=${{ matrix.minecraft_version }} \
             -Pfabric_version=${{ matrix.fabric_version }} \
             -Ploader_version=${{ matrix.loader_version }} \

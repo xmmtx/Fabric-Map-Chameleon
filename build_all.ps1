@@ -33,14 +33,18 @@ Write-Host "`n========== Building MC 1.20.5-1.21.11 ==========" -ForegroundColor
 Copy-Item build\libs\map-chameleon-*.jar output\
 Write-Host ">> output\$(Get-ChildItem output\map-chameleon-*+mc1.20.5-1.21.11.jar | ForEach-Object { $_.Name })" -ForegroundColor Green
 
-# ── MC 26.x（Mojang 官方映射）-b 指定构建文件 ──
+# ── MC 26.x（Mojang 官方映射，Gradle 9.x 移除 -b，需文件替换）──
 Write-Host "`n========== Building MC 26.2 ==========" -ForegroundColor Cyan
 (gc gradle/wrapper/gradle-wrapper.properties) -replace 'gradle-8.10.2-bin.zip', 'gradle-9.5.1-bin.zip' | sc gradle/wrapper/gradle-wrapper.properties
-.\gradlew.bat -b build-mojang.gradle clean build --no-daemon `
+Rename-Item build.gradle _build_yarn.gradle -Force
+Rename-Item build-mojang.gradle build.gradle -Force
+.\gradlew.bat clean build --no-daemon `
     "-Pminecraft_version=26.2" `
     "-Pfabric_version=0.155.2+26.2" `
     "-Ploader_version=0.19.3" `
     "-Pjava_version=25"
+Rename-Item build.gradle build-mojang.gradle -Force
+Rename-Item _build_yarn.gradle build.gradle -Force
 (gc gradle/wrapper/gradle-wrapper.properties) -replace 'gradle-9.5.1-bin.zip', 'gradle-8.10.2-bin.zip' | sc gradle/wrapper/gradle-wrapper.properties
 Copy-Item build\libs\map-chameleon-*.jar output\
 
