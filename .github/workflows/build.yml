@@ -16,28 +16,32 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # ── MC 1.20 ~ 1.20.4（旧网络 API，Yarn 映射）──
+          # ── MC 1.20 ~ 1.20.4（旧网络 API，Yarn 映射，Loom 1.7）──
           - label: "1.20-1.20.4"
             minecraft_version: "1.20.4"
             yarn_mappings: "1.20.4+build.3"
             fabric_version: "0.96.11+1.20.4"
             java_version: 21
-            gradle_version: "9.5.1"
+            gradle_version: "8.10.2"
+            build_file: "build.gradle"
 
-          # ── MC 1.20.5 ~ 1.21.x（新网络 API，Yarn 映射）──
+          # ── MC 1.20.5 ~ 1.21.x（新网络 API，Yarn 映射，Loom 1.7）──
           - label: "1.20.5-1.21.11"
             minecraft_version: "1.20.5"
             yarn_mappings: "1.20.5+build.1"
             fabric_version: "0.97.8+1.20.5"
             java_version: 21
-            gradle_version: "9.5.1"
+            gradle_version: "8.10.2"
+            build_file: "build.gradle"
 
-          # ── MC 26.2（Mojang 官方映射，无混淆）──
+          # ── MC 26.2（Mojang 官方映射，Loom 1.17，无混淆）──
           - label: "26.2"
             minecraft_version: "26.2"
             fabric_version: "0.155.2+26.2"
+            loader_version: "0.19.3"
             java_version: 25
             gradle_version: "9.5.1"
+            build_file: "build-mojang.gradle"
 
     steps:
       - name: Checkout
@@ -58,11 +62,23 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew wrapper --gradle-version ${{ matrix.gradle_version }}
-          ./gradlew build --no-daemon \
-            -Pminecraft_version=${{ matrix.minecraft_version }} \
-            -Pyarn_mappings=${{ matrix.yarn_mappings }} \
-            -Pfabric_version=${{ matrix.fabric_version }} \
-            -Pjava_version=${{ matrix.java_version }}
+          if [ "${{ matrix.build_file }}" = "build.gradle" ]; then
+            ./gradlew build --no-daemon \
+              -Pminecraft_version=${{ matrix.minecraft_version }} \
+              -Pyarn_mappings=${{ matrix.yarn_mappings }} \
+              -Pfabric_version=${{ matrix.fabric_version }} \
+              -Pjava_version=${{ matrix.java_version }}
+          else
+            mv build.gradle _build_yarn.gradle
+            mv ${{ matrix.build_file }} build.gradle
+            ./gradlew build --no-daemon \
+              -Pminecraft_version=${{ matrix.minecraft_version }} \
+              -Pfabric_version=${{ matrix.fabric_version }} \
+              -Ploader_version=${{ matrix.loader_version }} \
+              -Pjava_version=${{ matrix.java_version }}
+            mv build.gradle ${{ matrix.build_file }}
+            mv _build_yarn.gradle build.gradle
+          fi
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v5

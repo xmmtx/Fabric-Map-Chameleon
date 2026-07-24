@@ -1,18 +1,7 @@
-buildscript {
-	repositories {
-		maven { url = 'https://maven.fabricmc.net/' }
-		gradlePluginPortal()
-	}
-	dependencies {
-		classpath 'net.fabricmc:fabric-loom:1.17-SNAPSHOT'
-	}
-}
-
 plugins {
+	id 'fabric-loom' version '1.7-SNAPSHOT'
 	id 'maven-publish'
 }
-
-apply plugin: 'net.fabricmc.fabric-loom'
 
 java {
 	toolchain {
@@ -24,18 +13,10 @@ base.archivesName = project.archives_base_name
 version = project.mod_version
 group = project.maven_group
 
-// ── Detect build target ──
-// Legacy:  MC 1.20–1.20.4 (old networking API, Yarn mappings)
-// Modern:  MC 1.20.5–1.21.x (new networking API, Yarn mappings)
-// Mojang:  MC 26.x+ (new networking API, Mojang official mappings, no Yarn)
+// ── Detect MC 1.20–1.20.4 (old networking API) vs 1.20.5+ ──
 def isLegacyMC() {
 	def v = project.minecraft_version
 	return v == "1.20" || v.matches("1\\.20\\.[0-4]")
-}
-def isMojangMC() {
-	def v = project.minecraft_version
-	// MC 26.x uses the new version scheme; yarn mappings are unavailable
-	return v.matches("2[6-9]\\..*")
 }
 
 // ── Exclude the wrong entrypoint class from compilation ──
@@ -47,11 +28,6 @@ sourceSets {
 				exclude 'pl/kosma/mapchameleon/MapChameleonMod_Mojang.java'
 				exclude 'pl/kosma/mapchameleon/mixins/MixinPlayerManager.java'
 				exclude 'pl/kosma/mapchameleon/mixins/MixinPlayerManager_Mojang.java'
-			} else if (isMojangMC()) {
-				exclude 'pl/kosma/mapchameleon/MapChameleonMod.java'
-				exclude 'pl/kosma/mapchameleon/MapChameleonMod_Legacy.java'
-				exclude 'pl/kosma/mapchameleon/mixins/MixinPlayerManager.java'
-				exclude 'pl/kosma/mapchameleon/mixins/MixinPlayerManager_Legacy.java'
 			} else {
 				exclude 'pl/kosma/mapchameleon/MapChameleonMod_Legacy.java'
 				exclude 'pl/kosma/mapchameleon/MapChameleonMod_Mojang.java'
@@ -63,51 +39,35 @@ sourceSets {
 }
 
 repositories {
-	// Add any additional repositories here
 }
 
 dependencies {
-	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-
-	// MC 26.x: Mojang dropped obfuscation — no mappings needed
-	// Older: use Yarn mappings when specified
-	if (project.hasProperty('yarn_mappings') && !project.yarn_mappings.toString().isEmpty()) {
-		mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	}
-
-	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
-
-	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 }
 
 processResources {
-	def entrypoint
-	def minecraftDepends
-	def loaderDepends
-	def apiDepends
-	def mixinConfig
+	def entrypoint = isLegacyMC()
+		? "pl.kosma.mapchameleon.MapChameleonMod_Legacy"
+		: "pl.kosma.mapchameleon.MapChameleonMod"
 
-	if (isLegacyMC()) {
-		entrypoint = "pl.kosma.mapchameleon.MapChameleonMod_Legacy"
-		minecraftDepends = ">=1.20 <=1.20.4"
-		loaderDepends = ">=0.14.0"
-		apiDepends = ">=0.83.0"
-		mixinConfig = "map-chameleon.mixins_legacy.json"
-	} else if (isMojangMC()) {
-		entrypoint = "pl.kosma.mapchameleon.MapChameleonMod_Mojang"
-		minecraftDepends = ">=26.0"
-		loaderDepends = ">=0.19.0"
-		apiDepends = ">=0.155.0"
-		mixinConfig = "map-chameleon.mixins_mojang.json"
-	} else {
-		// MC 1.20.5 – 1.21.x (Yarn)
-		entrypoint = "pl.kosma.mapchameleon.MapChameleonMod"
-		minecraftDepends = ">=1.20.5 <=1.21.11"
-		loaderDepends = ">=0.15.0"
-		apiDepends = ">=0.92.0"
-		mixinConfig = "map-chameleon.mixins.json"
-	}
+	def minecraftDepends = isLegacyMC()
+		? ">=1.20 <=1.20.4"
+		: ">=1.20.5 <=1.21.11"
+
+	def loaderDepends = isLegacyMC()
+		? ">=0.14.0"
+		: ">=0.15.0"
+
+	def apiDepends = isLegacyMC()
+		? ">=0.83.0"
+		: ">=0.92.0"
+
+	def mixinConfig = isLegacyMC()
+		? "map-chameleon.mixins_legacy.json"
+		: "map-chameleon.mixins.json"
 
 	inputs.property "version", project.version
 	inputs.property "entrypoint", entrypoint
@@ -128,33 +88,14 @@ processResources {
 	}
 }
 
-// ensure that the encoding is set to UTF-8, no matter what the system default is
-// this fixes some edge cases with special characters not displaying correctly
-// see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
 tasks.withType(JavaCompile) {
 	options.encoding = "UTF-8"
 }
 
-// ── Jar naming: modname-version+mcX.Y.jar ──
-def mcSuffix
-if (isLegacyMC()) {
-	mcSuffix = "mc1.20-1.20.4"
-} else if (isMojangMC()) {
-	mcSuffix = "mc26.2"
-} else {
-	mcSuffix = "mc1.20.5-1.21.11"
-}
-// MC 26.x has no obfuscation → no remapJar task; set name on jar directly
-if (isMojangMC()) {
-	jar {
-		archiveFileName = "${project.archives_base_name}-${project.mod_version}+${mcSuffix}.jar"
-	}
-} else {
-	tasks.configureEach {
-		if (name == 'remapJar') {
-			archiveFileName = "${project.archives_base_name}-${project.mod_version}+${mcSuffix}.jar"
-		}
-	}
+// ── Jar naming ──
+def mcSuffix = isLegacyMC() ? "mc1.20-1.20.4" : "mc1.20.5-1.21.11"
+remapJar {
+	archiveFileName = "${project.archives_base_name}-${project.mod_version}+${mcSuffix}.jar"
 }
 jar {
 	from "LICENSE"
